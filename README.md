@@ -1,6 +1,6 @@
 # ModernBank Authentication Service
 
-ModernBank Authentication Service, ModernBank mikroservis mimarisi içinde kullanıcı kimlik doğrulama ve yetkilendirme işlemlerini yöneten Spring Boot tabanlı bir servistir. Kullanıcı kayıt işlemlerini hesap servisi üzerinden deleg eder, PBKDF2 ile şifreler ve AES ile şifrelenmiş JWT belirteçleri üretir. Redis destekli kara liste mekanizması ile token iptallerini yönetir, hata yönetimi için Parameter Service ile entegre çalışır.
+ModernBank Authentication Service, ModernBank mikroservis mimarisi içinde kullanıcı kimlik doğrulama ve yetkilendirme işlemlerini yöneten Spring Boot tabanlı bir servistir. Kullanıcı kayıt işlemlerini hesap servisi üzerinden işler, PBKDF2 ile şifreler ve AES ile şifrelenmiş JWT token üretir. Redis destekli kara liste mekanizması ile token iptallerini yönetir, hata yönetimi için Parameter Service ile entegre çalışır.
 
 ## İçindekiler
 - [Özellikler](#özellikler)
