@@ -2,7 +2,7 @@ name: Authentication Service CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
     # paths kısmını sildik, çünkü ana dizindeyiz. 
     # Herhangi bir değişiklikte çalışsın.
 
