@@ -23,8 +23,8 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-@WebFilter(filterName = "RequestCachingFilter" , urlPatterns = "/*")
-//@WebFilter(filterName = "RequestCachingFilter" , urlPatterns = "/??")
+@WebFilter(filterName = "RequestCachingFilter", urlPatterns = "/*")
+// @WebFilter(filterName = "RequestCachingFilter" , urlPatterns = "/??")
 
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
@@ -37,8 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
-            @NonNull FilterChain filterChain
-    ) throws ServletException, IOException {
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
         final String username;
 
@@ -51,6 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         jwt = jwtService.decryptJwt(jwt);
 
         if (blackListService.isBlackListed(jwt)) {
+            log.warn("Token is blacklisted: {}", jwt);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
@@ -58,29 +58,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         try {
             username = jwtService.extractUsername(jwt);
         } catch (ExpiredJwtException e) {
-            logger.error("Jwt expired");
+            log.error("Jwt expired: {}", e.getMessage());
             filterChain.doFilter(request, response);
             return;
         }
 
-        //fetch :almak , gidip getirmek
+        // fetch :almak , gidip getirmek
 
-        // if the user already connected we dont want to do all proccess of securityContext
-        // when the authentication is null means that the user is not yet authenticated./ The user not connected yet
+        // if the user already connected we dont want to do all proccess of
+        // securityContext
+        // when the authentication is null means that the user is not yet
+        // authenticated./ The user not connected yet
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 
             if (jwtService.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request)); // i want to build the details out of our requests out of our HTTP request
+                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request)); // i want to
+                                                                                                            // build the
+                                                                                                            // details
+                                                                                                            // out of
+                                                                                                            // our
+                                                                                                            // requests
+                                                                                                            // out of
+                                                                                                            // our HTTP
+                                                                                                            // request
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            }else{
+                log.debug("User authenticated via JWT: {}", username);
+            } else {
                 log.warn("Invalid JWT token: {}", jwt);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
-        }else{
+        } else {
             log.warn("Username is null or SecurityContextHolder already contains authentication");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
@@ -89,10 +100,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    //https://www.baeldung.com/spring-exclude-filter
+    // https://www.baeldung.com/spring-exclude-filter
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        return path.startsWith("/authentication/login") || path.startsWith("/actuator") || path.startsWith("/authentication/register");
+        return path.startsWith("/authentication/login") || path.startsWith("/actuator")
+                || path.startsWith("/authentication/register");
     }
 }

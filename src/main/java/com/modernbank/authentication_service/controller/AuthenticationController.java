@@ -15,10 +15,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/authentication")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthenticationController implements AuthenticationControllerApi {
 
     private final AuthenticationService authenticationService;
@@ -29,28 +31,39 @@ public class AuthenticationController implements AuthenticationControllerApi {
 
     @Override
     public ResponseEntity<AuthUserResponse> authUser(AuthUserRequest authUserRequest) {
-        return ResponseEntity.ok(mapperService.map(authenticationService.authUser(authUserRequest), AuthUserResponse.class));
+        log.info("Auth user request received for email: {}", authUserRequest.getEmail());
+        return ResponseEntity
+                .ok(mapperService.map(authenticationService.authUser(authUserRequest), AuthUserResponse.class));
     }
 
     @Override
     public BaseResponse registerUser(RegisterUserRequest registerUserRequest) {
+        log.info("Register user request received for email: {}", registerUserRequest.getEmail());
         authenticationService.registerUser(registerUserRequest);
+        log.info("User registered successfully for email: {}", registerUserRequest.getEmail());
         return new BaseResponse("User registered successfully");
     }
 
     @Override
     public ResponseEntity<BaseResponse> logoutUser(String token) {
+        log.info("Logout user request received");
         blackListService.add(token);
+        log.info("Logout successful");
         return ResponseEntity.ok(new BaseResponse("Logout successful"));
     }
 
     @Override
     public ResponseEntity<UserInfoResponse> validateToken(String token, HttpServletRequest request) {
-        return ResponseEntity.ok(mapperService.map(authenticationService.validateToken(request.getHeader("Authorization").split(" ")[1]), UserInfoResponse.class));
+        log.info("Validate token request received");
+        return ResponseEntity.ok(
+                mapperService.map(authenticationService.validateToken(request.getHeader("Authorization").split(" ")[1]),
+                        UserInfoResponse.class));
     }
 
     @Override
     public ResponseEntity<UserInfoResponse> validateTokenWithBody(BaseRequest baseRequest, HttpServletRequest request) {
-        return ResponseEntity.ok(mapperService.map(authenticationService.validateToken(request.getHeader("Authorization").split(" ")[1]), UserInfoResponse.class));
+        return ResponseEntity.ok(
+                mapperService.map(authenticationService.validateToken(request.getHeader("Authorization").split(" ")[1]),
+                        UserInfoResponse.class));
     }
 }

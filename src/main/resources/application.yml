@@ -1,0 +1,62 @@
+server:
+  port: 8081
+
+logging:
+  level:
+    root: INFO
+    org:
+      springframework: INFO
+
+LOG_DIR: ${LOG_DIR:/logs/authentication-service}
+
+spring:
+  output:
+    ansi:
+      enabled: ALWAYS
+  datasource:
+    url: ${DATABASE_URL}
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}     # Redis sunucu adresi
+      port: 6379             # Redis varsay?lan portu
+      password:              # Parolan yoksa bo? b?rak
+      timeout: 6000          # Ba?lant? zaman a??m? (ms)
+      jpa:
+      properties:
+        javax:
+        persistence:
+          validation:
+          mode: none
+      hibernate:
+        ddl-auto: update
+      open-in-view: false
+      repositories:
+        enabled: true
+  application:
+    name: authentication-service
+  main:
+    banner-mode: off
+    #allow-bean-definition-overriding: true
+cache:
+  type: redis        # Spring Cache mekanizmas?n? Redis'e y�nlendirir
+
+client:
+  feign:
+    account-service:
+      path: ${ACCOUNT_SERVICE_URL:http://localhost:8084}/api/v1
+      registerUser: /user/create
+    parameter-service:
+      path: ${PARAMETER_SERVICE_URL:http://localhost:8086}/api/v1
+      getErrorCode: /error-codes/error-code
+      getAllErrorCodes: /error-codes/error-code/all
+      logError: /log/error
+
+app:
+  jwtSecret: ${JWT_SECRET}
+  jwtCryptoSecret: ${JWT_CRYPTO_SECRET}
+
+security:
+  encryption:
+    secret-key: ${SECURITY_ENCRYPTION_SECRET_KEY}
