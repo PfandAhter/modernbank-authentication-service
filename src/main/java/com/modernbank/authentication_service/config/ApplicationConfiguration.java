@@ -1,6 +1,7 @@
 package com.modernbank.authentication_service.config;
 
-import com.modernbank.authentication_service.repository.UserRepository;
+import com.modernbank.authentication_service.api.client.AccountServiceClient;
+import com.modernbank.authentication_service.api.response.UserDetailsResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -25,7 +26,9 @@ import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 @Slf4j
 public class ApplicationConfiguration {
 
-    private final UserRepository userRepository;
+//    private final UserRepository userRepository;
+
+    private final AccountServiceClient accountServiceClient;
 
     @Bean
     public ModelMapper modelMapper() {
@@ -53,7 +56,7 @@ public class ApplicationConfiguration {
     @Bean
     public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService());
+        authenticationProvider.setUserDetailsService(userDetailsService(accountServiceClient));
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
 
@@ -65,12 +68,36 @@ public class ApplicationConfiguration {
     }
 
     @Bean
-    public UserDetailsService userDetailsService() {
-        try {
-            return userRepository::findByEmail;
-        } catch (Exception e) {
-            log.warn(UsernameNotFoundException.class.getName());
-            throw new UsernameNotFoundException("USER_NOT_FOUND"); //TODO: Error Codes
-        }
+    public UserDetailsService userDetailsService(AccountServiceClient accountServiceClient) {
+        return email ->{
+            try{
+                UserDetailsResponse userDetails = accountServiceClient.getUserDetailsForAuthentication(email);
+                if(userDetails == null){
+                    log.warn(UsernameNotFoundException.class.getName());
+                    throw new UsernameNotFoundException("USER_NOT_FOUND"); //TODO: Error Codes
+                }
+                return new org.springframework.security.core.userdetails.User(
+                        userDetails.getUserDetails().getEmail(),
+                        userDetails.getUserDetails().getPassword(),
+                        userDetails.getUserDetails().isEnabled(),
+                        userDetails.getUserDetails().isAccountNonExpired(),
+                        userDetails.getUserDetails().isCredentialsNonExpired(),
+                        userDetails.getUserDetails().isAccountNonLocked(),
+                        userDetails.getUserDetails().getRoles()
+                );
+
+            }catch(Exception e){
+                log.warn(UsernameNotFoundException.class.getName());
+                throw new UsernameNotFoundException("USER_NOT_FOUND"); //TODO: Error Codes
+            }
+        };
+
+
+//        try {
+//            return userRepository::findByEmail; //TODO: Here we will feign request to account service to get user details by email. I don't know how to do that now.
+//        } catch (Exception e) {
+//            log.warn(UsernameNotFoundException.class.getName());
+//            throw new UsernameNotFoundException("USER_NOT_FOUND"); //TODO: Error Codes
+//        }
     }
 }

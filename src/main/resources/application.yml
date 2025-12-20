@@ -2,6 +2,8 @@ server:
   port: 8081
 
 logging:
+  pattern:
+    console: '%clr(%d{yyyy-MM-dd HH:mm:ss}){faint} %clr(%-5level) %clr([%X{traceId}]){yellow} %clr(%logger{36}){cyan} - %msg%n'
   level:
     root: INFO
     org:
@@ -19,7 +21,7 @@ spring:
     password: ${DATABASE_PASSWORD}
   data:
     redis:
-      host: ${REDIS_HOST:localhost}     # Redis sunucu adresi
+      host: ${REDIS_HOST}     # Redis sunucu adresi
       port: 6379             # Redis varsay?lan portu
       password:              # Parolan yoksa bo? b?rak
       timeout: 6000          # Ba?lant? zaman a??m? (ms)
@@ -45,10 +47,11 @@ cache:
 client:
   feign:
     account-service:
-      path: ${ACCOUNT_SERVICE_URL:http://localhost:8084}/api/v1
+      path: ${ACCOUNT_SERVICE_URL}/api/v1
       registerUser: /user/create
+      getUserDetailsForAuthentication: /user/auth-details
     parameter-service:
-      path: ${PARAMETER_SERVICE_URL:http://localhost:8086}/api/v1
+      path: ${PARAMETER_SERVICE_URL}/api/v1
       getErrorCode: /error-codes/error-code
       getAllErrorCodes: /error-codes/error-code/all
       logError: /log/error

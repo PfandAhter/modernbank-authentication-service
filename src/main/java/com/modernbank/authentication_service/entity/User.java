@@ -2,7 +2,6 @@ package com.modernbank.authentication_service.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.modernbank.authentication_service.entity.enums.Role;
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.AllArgsConstructor;
@@ -14,8 +13,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-@Entity
-@Table(name = "users")
 @Getter
 @Setter
 @Builder
@@ -24,39 +21,26 @@ import java.util.Set;
 
 public class User implements UserDetails {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column
     private String id;
 
-    @Column(name = "tckn", nullable = false)
     private String tckn;
 
-    @Column(name = "firstName", nullable = false)
     private String firstName;
 
-    @Column(name = "secondName", nullable = true)
     private String secondName;
 
-    @Column(name = "lastName", nullable = false)
     private String lastName;
 
-    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "gsm", nullable = false)
     private String gsm;
 
-    @Column(name = "datofbirth", nullable = false)
     private String dateOfBirth;
 
-    @Column(name = "created_date")
     private LocalDateTime createdDate;
 
-    @Column(name = "updated_date")
     private LocalDateTime updatedDate;
 
     private boolean isAccountNonExpired;
@@ -67,12 +51,8 @@ public class User implements UserDetails {
 
     private boolean isEnabled;
 
-    @ElementCollection(targetClass = Role.class, fetch = FetchType.EAGER)
-    @JoinTable(name = "authorities",  joinColumns = @JoinColumn(name = "user_id"))
-    @Enumerated(EnumType.STRING)
     private Set<Role> authorities;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
     @JsonManagedReference
     private List<Account> accounts;
 
