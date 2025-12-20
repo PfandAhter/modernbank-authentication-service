@@ -10,7 +10,7 @@
 
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%-5level) %clr([%thread]){faint} %clr(%logger{36}){cyan} - %msg %n</pattern>
+            <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss}){faint} %clr(%-5level) %clr([%X{traceId}]){yellow} %clr(%logger{36}){cyan} - %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>

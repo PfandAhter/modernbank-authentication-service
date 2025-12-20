@@ -69,6 +69,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // securityContext
         // when the authentication is null means that the user is not yet
         // authenticated./ The user not connected yet
+
+        //TODO: REMOVE AUTHENTICATION SERVICE DEPENDENCY FROM DATABASE AND USE ACCOUNT SERVICE VIA RABBITMQ OR FEIGN SERVICE CALL
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
 

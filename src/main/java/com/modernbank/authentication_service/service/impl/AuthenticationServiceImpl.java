@@ -1,16 +1,18 @@
 package com.modernbank.authentication_service.service.impl;
 
 import com.modernbank.authentication_service.api.client.AccountServiceClient;
+import com.modernbank.authentication_service.api.dto.UserDetailsDTO;
 import com.modernbank.authentication_service.api.request.AuthUserRequest;
 import com.modernbank.authentication_service.api.request.RegisterUserRequest;
 import com.modernbank.authentication_service.api.response.BaseResponse;
+import com.modernbank.authentication_service.api.response.UserDetailsResponse;
 import com.modernbank.authentication_service.entity.User;
+import com.modernbank.authentication_service.entity.enums.Role;
 import com.modernbank.authentication_service.exceptions.AuthenticationFailedException;
 import com.modernbank.authentication_service.exceptions.NotFoundException;
 import com.modernbank.authentication_service.jwt.JwtService;
 import com.modernbank.authentication_service.model.UserAuthModel;
 import com.modernbank.authentication_service.model.UserInfoModel;
-import com.modernbank.authentication_service.repository.UserRepository;
 import com.modernbank.authentication_service.service.AuthenticationService;
 import com.modernbank.authentication_service.service.MapperService;
 import lombok.RequiredArgsConstructor;
@@ -21,13 +23,14 @@ import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.modernbank.authentication_service.constants.ErrorCodeConstants.*;
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-    private final UserRepository userRepository;
+//    private final UserRepository userRepository;
 
     private final AuthenticationManager authenticationManager;
 
@@ -40,16 +43,21 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public UserAuthModel authUser(AuthUserRequest request) {
         log.info("Authenticating user with email: {}", request.getEmail());
-        User user = userRepository.findByEmailOptional(request.getEmail())
-                .orElseThrow(() -> {
-                    log.error("User not found for email: {}", request.getEmail());
-                    return new NotFoundException(USER_NOT_FOUND);
-                });
 
-        if (!user.isEnabled()) {
+        UserDetailsResponse userDetailsResponse = accountServiceClient.getUserDetailsForAuthentication(request.getEmail());
+
+        if (userDetailsResponse == null || userDetailsResponse.getUserDetails() == null) {
+            log.error("User not found for email: {}", request.getEmail());
+            throw new NotFoundException(USER_NOT_FOUND);
+        }
+
+        UserDetailsDTO userDto = userDetailsResponse.getUserDetails();
+
+        if (!userDto.isEnabled()) {
             log.warn("User is not enabled: {}", request.getEmail());
             throw new AuthenticationFailedException(USER_IS_NOT_ENABLED);
         }
+
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
@@ -60,9 +68,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         log.info("User authenticated successfully: {}", request.getEmail());
 
+        // UserDetails oluştur
+        org.springframework.security.core.userdetails.User userDetails =
+                new org.springframework.security.core.userdetails.User(
+                        userDto.getEmail(),
+                        userDto.getPassword(),
+                        userDto.isEnabled(),
+                        userDto.isAccountNonExpired(),
+                        userDto.isCredentialsNonExpired(),
+                        userDto.isAccountNonLocked(),
+                        userDto.getRoles()
+                );
+
         return UserAuthModel.builder()
-                .token(jwtService.generateToken(user))
-                .role(user.getAuthorities().iterator().next()).build();
+                .token(jwtService.generateToken(userDetails))
+                .role(userDto.getRoles().iterator().next())
+                .build();
     }
 
     @Override
@@ -72,13 +93,28 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     }
 
     public UserInfoModel validateToken(String token) {
-        User response = userRepository.findByEmailOptional(jwtService.extractUsername(jwtService.decryptJwt(token)))
-                .orElseThrow(() -> new NotFoundException(USER_NOT_FOUND));
+        UserDetailsResponse response = accountServiceClient.getUserDetailsForAuthentication(jwtService.extractUsername(jwtService.decryptJwt(token)));
+
+        if (response == null || response.getUserDetails() == null) {
+            log.warn("User not found for token validation");
+            throw new NotFoundException(USER_NOT_FOUND);
+        }
+
         if (!jwtService.isTokenValid(jwtService.decryptJwt(token))) {
             log.warn("Token is not valid");
             throw new AuthenticationFailedException(TOKEN_IS_NOT_VALID);
         }
 
-        return mapperService.map(response, UserInfoModel.class);
+        UserInfoModel userInfo = new UserInfoModel();
+
+        userInfo.setId(response.getUserDetails().getId());
+        userInfo.setEmail(response.getUserDetails().getEmail());
+
+        userInfo.setAuthorities(response.getUserDetails().getRoles().stream()
+                .map(Role::getAuthority)
+                .toList()
+        );
+
+        return userInfo;
     }
 }

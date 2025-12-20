@@ -57,7 +57,7 @@ public class ErrorCodeServiceImpl implements ErrorCodeService {
                 redisTemplate.opsForValue().set(cacheKey, errorCode);
             });
         } catch (Exception e) {
-            log.error("Error refreshing error codes cache, keeping existing cache.", e);
+            log.error("Error refreshing error codes cache, keeping existing cache.");
         }
     }
 
