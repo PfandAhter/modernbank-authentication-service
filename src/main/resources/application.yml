@@ -15,25 +15,12 @@ spring:
   output:
     ansi:
       enabled: ALWAYS
-  datasource:
-    url: ${DATABASE_URL}
-    username: ${DATABASE_USERNAME}
-    password: ${DATABASE_PASSWORD}
   data:
     redis:
       host: ${REDIS_HOST}     # Redis sunucu adresi
       port: 6379             # Redis varsay?lan portu
       password:              # Parolan yoksa bo? b?rak
       timeout: 6000          # Ba?lant? zaman a??m? (ms)
-      jpa:
-      properties:
-        javax:
-        persistence:
-          validation:
-          mode: none
-      hibernate:
-        ddl-auto: update
-      open-in-view: false
       repositories:
         enabled: true
   application:

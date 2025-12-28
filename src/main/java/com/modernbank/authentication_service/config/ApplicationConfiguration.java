@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -19,6 +20,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 
+import static com.modernbank.authentication_service.constants.ErrorCodeConstants.USER_NOT_FOUND;
+
 @Configuration
 @RequiredArgsConstructor
 @EnableAspectJAutoProxy
@@ -26,8 +29,7 @@ import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
 @Slf4j
 public class ApplicationConfiguration {
 
-//    private final UserRepository userRepository;
-
+    @Lazy
     private final AccountServiceClient accountServiceClient;
 
     @Bean
@@ -74,7 +76,7 @@ public class ApplicationConfiguration {
                 UserDetailsResponse userDetails = accountServiceClient.getUserDetailsForAuthentication(email);
                 if(userDetails == null){
                     log.warn(UsernameNotFoundException.class.getName());
-                    throw new UsernameNotFoundException("USER_NOT_FOUND"); //TODO: Error Codes
+                    throw new UsernameNotFoundException(USER_NOT_FOUND);
                 }
                 return new org.springframework.security.core.userdetails.User(
                         userDetails.getUserDetails().getEmail(),
@@ -88,16 +90,8 @@ public class ApplicationConfiguration {
 
             }catch(Exception e){
                 log.warn(UsernameNotFoundException.class.getName());
-                throw new UsernameNotFoundException("USER_NOT_FOUND"); //TODO: Error Codes
+                throw new UsernameNotFoundException(USER_NOT_FOUND);
             }
         };
-
-
-//        try {
-//            return userRepository::findByEmail; //TODO: Here we will feign request to account service to get user details by email. I don't know how to do that now.
-//        } catch (Exception e) {
-//            log.warn(UsernameNotFoundException.class.getName());
-//            throw new UsernameNotFoundException("USER_NOT_FOUND"); //TODO: Error Codes
-//        }
     }
 }
