@@ -30,13 +30,9 @@ import static java.util.stream.Collectors.toList;
 @Slf4j
 public class AuthenticationServiceImpl implements AuthenticationService {
 
-//    private final UserRepository userRepository;
-
     private final AuthenticationManager authenticationManager;
 
     private final AccountServiceClient accountServiceClient;
-
-    private final MapperService mapperService;
 
     private final JwtService jwtService;
 

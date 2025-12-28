@@ -11,4 +11,8 @@ public class ErrorCodeConstants {
     public static final String TOKEN_IS_NOT_VALID = "H0033";
 
     public static final String BAD_CREDENTIALS_PROVIDED = "H0034";
+
+    public static final String SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE";
+
+    public static final String SYSTEM_ERROR = "SYSTEM_ERROR";
 }
