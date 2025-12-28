@@ -38,6 +38,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         log.error("Servis erişim hatası (Retry Failed). Detay: {}", e.getMessage());
         ErrorCodes errorCodes = getErrorCodeSafe(SERVICE_UNAVAILABLE);
 
+        if(errorCodes.getHttpStatus() == null) {
+            errorCodes.setHttpStatus(HttpStatus.SERVICE_UNAVAILABLE.value());
+        }
+
         return ResponseEntity
                 .status(errorCodes.getHttpStatus())
                 .body(createErrorResponseBody(e, request, errorCodes));
@@ -61,6 +65,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         logError(exception, request);
         ErrorCodes errorCodes = getErrorCodeSafe(BAD_CREDENTIALS_PROVIDED);
 
+        if(errorCodes.getHttpStatus() == null) {
+            errorCodes.setHttpStatus(HttpStatus.NOT_ACCEPTABLE.value());
+        }
+
         return ResponseEntity
                 .status(errorCodes.getHttpStatus())
                 .body(createErrorResponseBody(exception, request, errorCodes));
@@ -70,6 +78,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<BaseResponse> handleBadCredentialsException(UsernameNotFoundException exception, HttpServletRequest request) {
         logError(exception, request);
         ErrorCodes errorCodes = getErrorCodeSafe(USER_NOT_FOUND);
+
+        if(errorCodes.getHttpStatus() == null) {
+            errorCodes.setHttpStatus(HttpStatus.NOT_ACCEPTABLE.value());
+        }
 
         return ResponseEntity
                 .status(errorCodes.getHttpStatus())
