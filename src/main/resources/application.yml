@@ -11,6 +11,15 @@ logging:
 
 LOG_DIR: ${LOG_DIR:/logs/authentication-service}
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
 spring:
   output:
     ansi:
