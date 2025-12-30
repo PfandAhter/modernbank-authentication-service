@@ -3,7 +3,7 @@ package com.modernbank.authentication_service.exceptions;
 import lombok.Getter;
 
 @Getter
-public class RemoteDirectException extends BusinessException {
+public class RemoteDirectException extends RuntimeException {
   private final String originalErrorCode;
   private final String originalMessage;
   private final int httpStatus;
