@@ -27,6 +27,7 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/authentication/**")
                         .permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .anyRequest()
                         .authenticated())
                 .sessionManagement(session -> session
