@@ -47,7 +47,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(createErrorResponseBody(e, request, errorCodes));
     }
 
-    @ExceptionHandler({BusinessException.class})
+    @ExceptionHandler({BusinessException.class, RemoteDirectException.class})
     public ResponseEntity<BaseResponse> handleBusinessException(BusinessException e, HttpServletRequest request) {
         logError(e, request);
 
